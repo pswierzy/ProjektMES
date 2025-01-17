@@ -1,148 +1,68 @@
-import math
+from math import sin, pi 
 import matplotlib.pyplot as plt
-import numpy as np
+from scipy.integrate import quad as integration
+import copy
 
-N = 7
+N = 15
 def get_N():
-    print("Wprowadź N\n")
+    print("Wprowadź N: ")
     global N
-    N = input()
-
-def gauss_legendre_integral(f, a, b):
-    """
-    Oblicza całkę funkcji f na przedziale [a, b] za pomocą metody Gaussa-Legendre.
-    
-    Parametry:
-        f (function): Funkcja do scałkowania.
-        a (float): Początek przedziału całkowania.
-        b (float): Koniec przedziału całkowania.
-    
-    Zwraca:
-        float: Przybliżona wartość całki.
-    """
-    
-    # Węzły i wagi
-    nodes, weights = np.polynomial.legendre.leggauss(5)
-
-    
-    # Przekształcenie przedziału z [a, b] na [-1, 1]
-    transform = lambda x: 0.5 * (b - a) * x + 0.5 * (b + a)
-    det_jacobian = 0.5 * (b - a)  # Pochodna transformacji (stała Jacobiana)
-    
-    # Obliczenie sumy ważonej
-    integral = 0
-    for i in range(5):
-        x_transformed = transform(nodes[i])
-        integral += weights[i] * f(x_transformed)
-
-    
-    print(integral*det_jacobian)
-    
-    return integral * det_jacobian
+    N = int(input())
 
 def inverse_matrix(A):
-    # gauss-jordan
-    # założenie takie, że jest to macierz kwadratowa
+    '''
+    Odwraca macierz A za pomocą algorytmu Gaussa-Jordana.
+    Zakładamy, że A jest macierzą kwadratową i że można ją odwrócić (det(A) != 0).
+
+    Parametry:
+        A (float[][]): Macierz do odwrócenia
+
+    Zwraca:
+        IA (float[][]): Odwrócona macierz A
+    '''
+
+    A = copy.deepcopy(A)
+    IA = [[1 if i == j else 0 for i in range(N)] for j in range(N)]
 
     def switch_rows(A, IA, i, j):
-        for k in range(N):
-            A[i][k], A[j][k] = A[j][k], A[i][k]
-            IA[i][k], IA[j][k] = IA[j][k], IA[i][k]
-
-    def multiply_row(A, IA, i):
-        switch = i
-        while A[i][i]==0:
-            switch+=1
-            if A[switch][i] != 0: switch_rows(A, IA, i, switch)
-
-        k = 1 / A[i][i]
-        for j in range(N):
-            A[i][j] *= k
-            IA[i][j] *= k
-    
-    def substract_row(A, IA, i, j):
-        k = A[j][i]
-        for t in range(N):
-            A[j][t] -= A[i][t] * k
-            IA[j][t] -= IA[i][t] * k
-        
-    IA = [[int(i==j) for i in range(N)] for j in range(N)]
+        A[i], A[j] = A[j], A[i]
+        IA[i], IA[j] = IA[j], IA[i]
 
     for i in range(N):
-        multiply_row(A, IA, i)
-        for j in range(i+1, N):
-            substract_row(A, IA, i, j)
-    for i in range(N-1, 0, -1):
-        for j in range(i-1, -1, -1):
-            substract_row(A, IA, i, j)
+        if A[i][i] == 0:
+            for k in range(i + 1, N):
+                if A[k][i] != 0:
+                    switch_rows(A, IA, i, k)
+                    break
+            else:
+                raise ValueError("Macierz jest osobliwa i nie można jej odwrócić.")
+        
+        diag = A[i][i]
+        for j in range(N):
+            A[i][j] /= diag
+            IA[i][j] /= diag
+
+        for k in range(N):
+            if k != i:
+                factor = A[k][i]
+                for j in range(N):
+                    A[k][j] -= factor * A[i][j]
+                    IA[k][j] -= factor * IA[i][j]
 
     return IA
 
-def e(i, x):
-    '''
-    Wylicza wartość ei(x) w zależności od danego N na przedziale [0, 2].
-    Funkcja ei to funkcja, która jest równa 0 dla x-ów oprócz xi, dla którego jest równa 1.
-
-    Parametry:
-        i (int): Numer x-a.
-        x (float): x dla którego wyliczana jest ta funkcja
-
-    Zwraca:
-        float: Wartość funkcji ei(x).
-    '''
-    x_i = 2 * i / N
-    next_x = x_i + 2 / N
-    previous_x = x_i - 2 / N
-
-    return (
-        0 if x >= next_x or x <= previous_x 
-        else (x - previous_x) / (x_i - previous_x) if x > previous_x and x <= x_i 
-        else 1 - (x - x_i) / (next_x - x_i)
-    )
-    
-def e_prim(i, x):
-    '''
-    Wylicza wartość e'(x) w zależności od danego N na przedziale [0, 2].
-    Funkcja e' to pochodna funkcji e.
-
-    Parametry:
-        i (int): Numer x-a.
-        x (float): x dla którego wyliczana jest ta funkcja
-
-    Zwraca:
-        float: Wartość funkcji e'(x).
-    '''
-    x_i = 2 * i / N
-    next_x = x_i + 2 / N
-    previous_x = x_i - 2 / N
-
-    return (
-        0 if x >= next_x or x <= previous_x 
-        else 1 / (x_i - previous_x) if x > previous_x and x <= x_i 
-        else 1 / (x_i - next_x)
-    )
-    
-def E(x):
-    if x<=1: return 2
-    return 6
-
-def integral(f):
-    return gauss_legendre_integral(f, 0, 1) + gauss_legendre_integral(f, 1, 2)
-
-def B(i, j): 
-    return 4 * e(i, 0) * e(j, 0) - integral(
-        lambda x: E(x) * e_prim(i, x) * e_prim(j , x)
-    )
-    
-def L(i):
-    return 8 * e(i, 0) + 1000 * integral(
-        lambda x: e(i, x) * math.sin(math.pi * x)
-    )
-
 def matrix_multiplication(A, B):
-    # zakładamy że A jest kwadratowa o długości N
-    # a B jest o wymiarach 1 x N
-    # więc wynik jest listą o długości N
+    '''
+    Mnoży macierz A z macierzą B.
+    Zakładamy, że można to zrobić.
+
+    Parametry:
+        A (float[][]): Macierz do przemnożenia przez macież B
+        B (float[][]): Druga macierz
+
+    Zwraca:
+        result (float[][]): Wynik mnożenia
+    '''
 
     result = [0 for _ in range(N)]
 
@@ -152,41 +72,101 @@ def matrix_multiplication(A, B):
     
     return result
 
+def e(i, x):
+    '''
+    Wylicza wartość e_i(x) w zależności od danego N na przedziale [0, 2].
+    Funkcja e_i to funkcja, która jest równa 0 dla x-ów oprócz xi, dla którego jest równa 1.
+
+    Parametry:
+        i (int): Numer x-a.
+        x (float): x dla którego wyliczana jest ta funkcja
+
+    Zwraca:
+        float: Wartość funkcji e_i(x).
+    '''
+    H = 2/N
+    x_i = H * i
+    next_x = H * (i+1)
+    previous_x = H * (i-1)
+
+    return (
+        0 if x >= next_x or x <= previous_x 
+        else (x - previous_x) / (x_i - previous_x) if x > previous_x and x <= x_i 
+        else 1 - (x - x_i) / (next_x - x_i)
+    )
+    
+def e_prim(i, x):
+    '''
+    Wylicza wartość e_i'(x) w zależności od danego N na przedziale [0, 2].
+    Funkcja e_i' to pochodna funkcji e_i.
+
+    Parametry:
+        i (int): Numer x-a.
+        x (float): x dla którego wyliczana jest ta funkcja
+
+    Zwraca:
+        float: Wartość funkcji e_i'(x).
+    '''
+    H = 2/N
+    x_i = H * i
+    next_x = H * (i+1)
+    previous_x = H * (i-1)
+
+    return (
+        0 if x >= next_x or x <= previous_x 
+        else N/2 if x <= x_i 
+        else -N/2
+    )
+    
+def E(x):
+    if x<=1: return 2
+    return 6
+
+def B(i, j): 
+    y, err = integration(lambda x: E(x)*e_prim(i,x)*e_prim(j,x), 0, 2, limit = 100)
+    return 4*e(i, 0)*e(j, 0) - y
+    
+def L(i):
+    y, err = integration(lambda x: e(i, x) * sin(pi * x), 0, 2, limit = 100)
+    return 8 * e(i, 0) + 1000 * y
+
 def final_result(A, x):
-    # A - tablica o długości N z alfami
+    '''
+    Oblicza wartość funkcji u(x).
+
+    Parametry:
+        A (float[][]): Macierz z alfami o długości N-1
+        x (float): Wartość x-a dla którego wyliczamy wynik funkcji u(x) 
+
+    Zwraca:
+        res (float): Wynik funkcji u(x)
+    '''
     res = 3
     for i in range(N):
         res += A[i] * e(i,x)
     return res
 
-B = [[B(i,j) for i in range(N)] for j in range(N)]
-L = [L(i) for i in range(N)]
+def get_alfas():
+    matrix_B = [[B(j,i) for i in range(N)] for j in range(N)]
+    matrix_L = [L(i) for i in range(N)]
+    return matrix_multiplication(inverse_matrix(matrix_B), matrix_L)
 
-for i in range(N):
-    print(B[i])
+def show_plot():
+    alfas = get_alfas()
+    x = [i*0.01 for i in range(201)]  # 201 punktów od 0 do 2
+    y = [final_result(alfas, x[i]) for i in range(201)]
+    plt.plot(x, y, label='y = u(x)', color='blue', linestyle='-', linewidth=2)
+    plt.title("Wykres funkcji")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
 
-alfas = matrix_multiplication(inverse_matrix(B), L)
-
-# Tworzymy zakres wartości x
-x = [i*0.01 for i in range(201)]  # 200 punktów od 0 do 2
-
-# Obliczamy wartości funkcji
-y = [final_result(alfas, x[i]) for i in range(201)]
-
-# Rysowanie wykresu
-plt.plot(x, y, label='y = u(x)', color='blue', linestyle='-', linewidth=2)
-
-# Dodanie opisu osi i tytułu
-plt.title("Wykres funkcji")
-plt.xlabel("x")
-plt.ylabel("y")
-
-# Dodanie siatki
-plt.grid(True)
-
-# Dodanie legendy
-plt.legend()
-
-# Wyświetlenie wykresu
-plt.show()
-
+if __name__ == '__main__':
+    get_N()
+    # z testowania:
+    # program najlepiej działa dla N <= 16
+    # zaczyna robić dziwne rzeczy dla N >= 23
+    # zaczyna wywalać błąd dla N >= 28
+    show_plot()

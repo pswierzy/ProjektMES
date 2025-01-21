@@ -122,12 +122,19 @@ def E(x):
     if x<=1: return 2
     return 6
 
+def x_i(i):
+    if i<0: return 0
+    if i>N: return 2
+    return 2/N * i
+
 def B(i, j): 
-    y, err = integration(lambda x: E(x)*e_prim(i,x)*e_prim(j,x), 0, 2, limit = 100)
+    if abs(i-j) >= 2: return 0
+    if abs(i-j) == 1: y = integration(lambda x: E(x)*e_prim(i,x)*e_prim(j,x), min(x_i(i), x_i(j)), max(x_i(i), x_i(j)))[0]
+    if i==j: y = integration(lambda x: E(x)*e_prim(i,x)*e_prim(j,x), min(x_i(i-1), x_i(j-1)), max(x_i(i+1), x_i(j+1)))[0]
     return 4*e(i, 0)*e(j, 0) - y
     
 def L(i):
-    y, err = integration(lambda x: e(i, x) * sin(pi * x), 0, 2, limit = 100)
+    y = integration(lambda x: e(i, x) * sin(pi * x), x_i(i-1), x_i(i+1))[0]
     return 8 * e(i, 0) + 1000 * y
 
 def final_result(A, x):
@@ -165,8 +172,4 @@ def show_plot():
 
 if __name__ == '__main__':
     get_N()
-    # z testowania:
-    # program najlepiej działa dla N <= 16
-    # zaczyna robić dziwne rzeczy dla N >= 23
-    # zaczyna wywalać błąd dla N >= 28
     show_plot()

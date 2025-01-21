@@ -1,30 +1,63 @@
-# Projekt z Równań Różniczkowych i Różnicowych
+# 📘 Projekt z Równań Różniczkowych i Różnicowych
 
-## Cel projektu
+## 🎯 Cel projektu
 
-Projekt polega na rozwiązaniu podanego niżej równania różniczkowego za pomocą **Metody Elementów Skończonych (MES)**. W ramach projektu należy:
+Projekt dotyczy rozwiązania równania różniczkowego przy użyciu **Metody Elementów Skończonych (MES)**.
 
-1. Znaleźć sformułowanie słabe równania.
-2. Wygenerować układ równań liniowych.
-3. Rozwiązać wygenerowany układ równań liniowych.
-4. Narysować wykres rozwiązania.
+## 📝 Opis problemu
 
-## Zadanie: Odkształcenie sprężyste
-
-Ilustracja równania:
+Rozważany model opisuje **odkształcenie sprężyste**, a jego matematyczny zapis przedstawia poniższe równanie:
 
 ![Ilustracja równania](równanie.png)
 
-## Znalezienie sformułowania słabego i układu równań
+## 🧩 Metoda rozwiązania
 
-Rozwiązanie zostało przedstawione poniżej:
+Rozwiązanie problemu zostało uzyskane poprzez następujące etapy:
+
+1. Wyznaczenie **sformułowania słabego** równania.
+2. Wygenerowanie układu równań liniowych.
+3. Rozwiązanie układu równań.
+4. Wizualizacja wyników za pomocą wykresu.
 
 ![Zdjęcie rozwiązania](rozwiązanie.png)
 
-## Przykładowy wykres
+## 📊 Wyniki
 
-Poniższy wykres przedstawia wyniki otrzymane za pomocą zaimplementowanego algorytmu (dla N = 15):
+Poniższy wykres przedstawia otrzymane wyniki dla **N = 300**.
 
 ![Wykres](wykres.png)
 
----
+## 🚀 Uruchomienie kodu
+
+Aby uruchomić projekt, wykonaj następujące kroki:
+
+1. Upewnij się, że masz zainstalowanego **Pythona 3.x** oraz wymagane biblioteki:
+
+   ```bash
+   pip install matplotlib scipy
+   ```
+
+2. Uruchom skrypt:
+
+   ```bash
+   python kod_do_projektu.py
+   ```
+
+Po uruchomieniu skryptu zostanie wygenerowany wykres przedstawiający rozwiązanie równania.
+
+## 📂 Struktura projektu
+
+```
+📁 differential_equations_project
+│── 📄 kod_do_projektu.py        # Główny skrypt projektu
+│── 📄 README.md                 # Dokumentacja projektu
+│── 📄 rownanie.png              # Ilustracja równania
+│── 📄 rozwiazanie.png           # Wyprowadzenie sformułowania słabego
+│── 📄 wykres.png                # Wykres uzyskanego rozwiązania
+```
+
+## ✍️ Autor
+
+Projekt wykonany w ramach kursu **Równań Różniczkowych i Różnicowych**.
+
+**Autor:** Pior Świerzy
